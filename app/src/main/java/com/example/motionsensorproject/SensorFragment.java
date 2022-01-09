@@ -41,6 +41,8 @@ import java.util.List;
  * Use the {@link SensorFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
+
+
 public class SensorFragment extends Fragment {
 
     private static final ColorChoices[] COLORS = new ColorChoices[]
@@ -55,6 +57,10 @@ public class SensorFragment extends Fragment {
                     ColorChoices.BLACK
             };
 
+    public interface SavePackageItemListener
+    {
+        public void saveItems(String[] items);
+    }
 
     public static enum ColorChoices
     {
@@ -97,7 +103,7 @@ public class SensorFragment extends Fragment {
     private TextView display;
     private ApplicationList list;
     private ListView listView;
-    private ArrayList<InfoItem> chosenItems;
+    private InfoItem[] chosenItems;
     private ProximitySensorListener proximityListener;
 
 
@@ -106,9 +112,10 @@ public class SensorFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SensorFragment newInstance() {
+    public static SensorFragment newInstance(String[] packageNames) {
         SensorFragment fragment = new SensorFragment();
         Bundle args = new Bundle();
+        args.putStringArray(ITEMS_KEYS, packageNames);
         fragment.setArguments(args);
         return fragment;
     }
@@ -118,30 +125,28 @@ public class SensorFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "created fragment");
         list = ApplicationList.getInstance(getContext().getPackageManager());
-        chosenItems = new ArrayList<>(NUM_INTERVALS);
+        chosenItems = new InfoItem[NUM_INTERVALS];
         setHasOptionsMenu(true);
-        if (getArguments() != null) {
-
-        }
-        if (savedInstanceState != null)
+        Bundle saveState = (savedInstanceState == null)? getArguments(): savedInstanceState;
+        if (saveState != null)
         {
-            String[] items = savedInstanceState.getStringArray(ITEMS_KEYS);
+            String[] items = saveState.getStringArray(ITEMS_KEYS);
             for (int i = 0; i < items.length; i++)
             {
                 if (items[i] != null)
                 {
-                    chosenItems.add(i, list.getItem(items[i]));
+                    chosenItems[i] = list.getItem(items[i]);
                 }
                 else
                 {
-                    chosenItems.add(i, null);
+                    chosenItems[i] = null;
                 }
             }
         }
         else {
             for (int i = 0; i < NUM_INTERVALS; i++)
             {
-                chosenItems.add(i, null);
+                chosenItems[i] = null;
             }
         }
 
@@ -172,7 +177,7 @@ public class SensorFragment extends Fragment {
 
     private class PackageAdapter extends ArrayAdapter<InfoItem>
     {
-        public PackageAdapter(@NonNull Context context, @NonNull List<InfoItem> objects)
+        public PackageAdapter(@NonNull Context context, @NonNull InfoItem[] objects)
         {
             super(context, R.layout.list_set_item, objects);
         }
@@ -213,7 +218,7 @@ public class SensorFragment extends Fragment {
                     int position = data.getIntExtra(ChooseApplicationFragment.POSITION_KEY, -1);
                     if (position != -1)
                     {
-                        chosenItems.set(position, list.getItem(packageName));
+                        chosenItems[position] = list.getItem(packageName);
                         Log.d(TAG, packageName);
                         ((ArrayAdapter) listView.getAdapter()).notifyDataSetChanged();
                     }
@@ -281,19 +286,31 @@ public class SensorFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putStringArray(ITEMS_KEYS, getNames());
+
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        ((SavePackageItemListener) getActivity()).saveItems(getNames());
+    }
+
+    private String[] getNames()
+    {
         String[] names = new String[NUM_INTERVALS];
         for (int i = 0; i < NUM_INTERVALS; i++)
         {
-            if (chosenItems.get(i) != null)
+            if (chosenItems[i] != null)
             {
-                names[i] = chosenItems.get(i).getName();
+                names[i] = chosenItems[i].getName();
             }
             else
             {
                 names[i] = null;
             }
         }
-        outState.putStringArray(ITEMS_KEYS, names);
+        return names;
     }
 
     public static ColorChoices getColor(int index)

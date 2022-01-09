@@ -17,7 +17,7 @@ public class ProximitySensorListener implements SensorEventListener {
 
     private static final String TAG = "SensorFragment";
     private TextView display;
-    private ArrayList<InfoItem> list;
+    private InfoItem[] list;
     private Context c;
     private TimerBar timerBar;
     private Handler handler;
@@ -30,7 +30,7 @@ public class ProximitySensorListener implements SensorEventListener {
         }
     };
 
-    public ProximitySensorListener(TextView display, ArrayList<InfoItem> list, Context c, TimerBar timerBar)
+    public ProximitySensorListener(TextView display, InfoItem[] list, Context c, TimerBar timerBar)
     {
         this.display = display;
         this.list = list;
@@ -82,12 +82,12 @@ public class ProximitySensorListener implements SensorEventListener {
             return;
         }
         int item = (int) ((timeInterval - SensorFragment.MIN_TIME) / SensorFragment.INTERVAL);
-        InfoItem packageItem = list.get(item);
+        InfoItem packageItem = list[item];
         if (packageItem == null)
         {
             return;
         }
-        Intent i = c.getPackageManager().getLaunchIntentForPackage(list.get(item).getPackageName());
+        Intent i = c.getPackageManager().getLaunchIntentForPackage(packageItem.getPackageName());
         try {
             c.startActivity(i);
         }
