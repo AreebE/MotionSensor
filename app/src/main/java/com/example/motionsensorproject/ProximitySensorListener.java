@@ -9,7 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
-
+//
 import java.util.ArrayList;
 
 public class ProximitySensorListener implements SensorEventListener {
