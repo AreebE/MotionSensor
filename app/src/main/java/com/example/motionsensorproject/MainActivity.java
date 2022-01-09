@@ -6,10 +6,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Log;
 
 import java.security.Permission;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 public class MainActivity
         extends AppCompatActivity
@@ -24,10 +26,12 @@ public class MainActivity
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "created activity");
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         FragmentManager manager = getSupportFragmentManager();
         if (manager.findFragmentById(R.id.fragment_container) == null)
         {
+            Log.d(TAG, savedInstanceState + " EEEE");
             Fragment f;
             if (savedInstanceState != null)
             {
@@ -55,12 +59,20 @@ public class MainActivity
 
     @Override
     public void saveItems(String[] items) {
+        Log.d(TAG, Arrays.toString(items));
         this.items = items;
     }
 
+//    @Override
+//    protected void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+//        outState.putStringArray(PACKAGE_ITEM_KEYS, items);
+//        super.onSaveInstanceState(outState, outPersistentState);
+//    }
+
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
         outState.putStringArray(PACKAGE_ITEM_KEYS, items);
+//        Log.d(TAG, outState + " called");
+        super.onSaveInstanceState(outState);
     }
 }
